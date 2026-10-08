@@ -1,0 +1,62 @@
+topic,label,label_type,short_name,confidence,reason
+0,Foreign policy & Iran war,issue,Iran war escalation,high,iran war; strikes; nuclear; examples on Trump's Iran war dragging on
+1,Noise / other,non_issue,Indian Congress-BJP politics,high,india; minister; BJP and Rahul Gandhi examples; non-US politics
+2,Tech & AI,issue,AI regulation and tech CEOs,medium,examples all AI apocalypse and regulation; stock/market words dilute
+3,Noise / other,non_issue,News site boilerplate and culture,high,photos; music; podcast; page headers and pop culture items
+4,Foreign policy & Iran war,issue,Israel aid and AIPAC,medium,israel; netanyahu; aipac; aid; Democrats' Israel stance mixes partisan positioning
+5,Horse race & candidates,non_issue,Midterm polls and outlook,high,midterms; polls; races; examples on GOP midterm polling
+6,Horse race & candidates,non_issue,Generic partisan sniping,low,short replies naming democrats/republicans/party; no issue; could be noise
+7,Economy & cost of living,issue,Gas and diesel prices,medium,gas prices; diesel; fuel; voters frustrated by prices; Iran war overlap
+8,Horse race & candidates,non_issue,Texas Senate Paxton-Talarico,high,paxton; talarico; senate race; poll examples
+9,Noise / other,non_issue,Extreme weather news,medium,rain; flooding; storm; weather reports with no policy angle
+10,Economy & cost of living,issue,Inflation and Fed rates,high,inflation; fed; rates; examples on rate hikes and inflation
+11,"Taxes, budget & spending",issue,Taxes and federal debt,high,tax; debt; trillion; wealth tax and $40T debt examples
+12,Foreign policy & Iran war,issue,Russia-Ukraine war,high,ukraine; russia; putin; nato; war escalation examples
+13,Horse race & candidates,non_issue,Primary election results,high,primary; results; live results examples for Minnesota and Wisconsin
+14,Horse race & candidates,non_issue,Harris and 2028 Democrats,high,harris; newsom; aoc; candidate; Democrats' 2028 field examples
+15,Immigration & deportations,issue,ICE shootings and detentions,high,ice; agents; shooting; detention; ICE killing and deportation examples
+16,Government ethics & corruption,issue,Taxpayer-funded ads and PAC money,medium,taxpayerfunded; ads; pac; musk; examples on taxpayer-paid pro-Trump ads
+17,Horse race & candidates,non_issue,Michigan Senate primary,high,elsayed; stevens; michigan senate; primary results examples
+18,Noise / other,non_issue,College and NFL football,high,college; nfl; football; sports news
+19,Trump & the administration,issue,Kennedy Center and ballroom,medium,kennedy center; ballroom; Trump name and demolition fight; vanity project
+20,Tariffs & trade,issue,Canada trade war,high,canada; tariffs; trade; retaliation examples
+21,Democracy & rule of law,issue,DOJ voter fraud push,high,doj; voter fraud; noncitizens; DOJ election monitors examples
+22,Health care,issue,ACA Medicaid Medicare cuts,high,healthcare; medicare; medicaid; insurance; ACA tax credit examples
+23,Democracy & rule of law,issue,Mail voting court fight,high,mail; voting; supreme court; ballot restriction examples
+24,Noise / other,non_issue,Plane crash news,high,crash; plane; Amazon cargo crash in Miami; no policy angle
+25,Health care,issue,RFK Jr. vaccine policy,high,vaccine; rfk; drug; CDC vaccine advice examples
+26,Noise / other,non_issue,World Cup and FIFA,medium,world cup; league; players; sports though Trump appears in examples
+27,Abortion & social issues,issue,Abortion and trans rights,high,abortion; trans; transgender; lgbtq; abortion ban examples
+28,Media & press,non_issue,White House press bans,high,cnn; politico; press; ban; outlets barred from White House
+29,Tech & AI,issue,Data center backlash,medium,data centers; electricity; backlash; AI backlash examples; energy overlap
+30,Horse race & candidates,non_issue,Vance and Rubio 2028,high,vance; rubio; run; successor and 2028 positioning examples
+31,Immigration & deportations,issue,Mass deportations policy,high,immigration; deportation; visa; mass and third-country deportation examples
+32,Trump & the administration,issue,Hegseth Pentagon purge,medium,hegseth; pentagon; secretary; purge of military; cabinet conduct
+33,Horse race & candidates,non_issue,Socialism attack lines,medium,socialism; communist; Republicans labeling Democrats socialist; party messaging
+34,Noise / other,non_issue,Vague Congress complaints,low,short where-is-Congress replies; some Indian Congress posts; no issue
+35,Noise / other,non_issue,Baseball game results,high,series; game; win; MLB game recaps
+36,Democracy & rule of law,issue,Supreme Court and reform,high,supreme court; justices; constitution; court reform and Trump cases
+37,Horse race & candidates,non_issue,McConnell health and seat,medium,mcconnell; absence; special election; Senate seat uncertainty
+38,Horse race & candidates,non_issue,Maine Platner scandal,high,platner; maine senate race; allegation; calls to drop out
+39,Trump & the administration,issue,Trump as president,high,trump; president; speech; examples judge Trump personally
+40,Horse race & candidates,non_issue,Florida races,high,florida; donalds; primary; Florida midterm races examples
+41,Horse race & candidates,non_issue,South Carolina Senate seat,high,lindsey graham; south carolina; senate; replacement nominee examples
+42,Democracy & rule of law,issue,SAVE America Act push,high,save act; thune; senate; voting law demanded before midterms
+43,Foreign policy & Iran war,issue,Trump-Xi China summit,high,china; xi; summit; US-China relations examples
+44,Crime & policing,issue,Shootings and violent crime,medium,shooting; police; murder; suspect; local crime news not policy
+45,Economy & cost of living,issue,Beef and food prices,medium,beef; food; prices; import; affordability; trade overlap
+46,Abortion & social issues,issue,Race and racism debates,low,racist; black; racism; civil; partisan race arguments; social issue
+47,Horse race & candidates,non_issue,GOP midterm convention,high,convention; dallas; rnc; Trump midterm convention examples
+48,Noise / other,non_issue,Lindsay Clancy murder trial,medium,lindsay; trial; jury; single non-political murder trial
+49,Tech & AI,issue,Crypto CLARITY Act,medium,crypto; clarity act; sec; Trump crypto ethics overlap
+50,Horse race & candidates,non_issue,Maine Collins-Jackson race,high,collins; jackson; maine senate race; debate; poll
+51,Horse race & candidates,non_issue,MAGA partisan insults,low,maga; cult; republicans; partisan identity insults; no policy
+52,Government ethics & corruption,issue,Epstein files release,medium,epstein files; release; doj; demands for accountability and release
+53,Horse race & candidates,non_issue,Carolinas and Kansas Senate races,high,north carolina; kansas; senate race; winnability examples
+54,Abortion & social issues,issue,Religion and Muslims,medium,muslims; christian; religion; Muslims made a campaign issue
+55,Education,issue,Student loans and schools,high,school; student; education; loan; student loan cuts examples
+56,Foreign policy & Iran war,issue,Strait of Hormuz standoff,high,hormuz; strait; iran; blockade and clash examples
+57,Noise / other,non_issue,WNBA and sports culture,medium,fever; clark; wnba; sports drama; trans sports debate minor
+58,Guns,issue,Gun laws and pardons,low,gun; guns; amendment; assault; examples mix pardons and DOJ gun law
+59,Tariffs & trade,issue,Trump tariffs and manufacturing,high,tariffs; trade; steel; manufacturing; tariff arsenal examples
+60,Immigration & deportations,issue,Border and child-safety smears,medium,border; illegals; amnesty; mixed with child abuse partisan smears
