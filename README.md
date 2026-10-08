@@ -25,7 +25,7 @@ Scripts, run in this order:
 | `06_topic_model.py fit` / `diag` | BERTopic (fit on a 60k sample, applied to all docs) and the topic sheet for the LLM; seeds, coherence and the LDA sweep | `data/interim/doc_topics.parquet`, `data/labels/topic_sheet.csv` | ~5 min + ~10 min |
 | `07_make_validation_sample.py make` / `score` | blind labelling sheets (150 validation, 1,500 calibration, 50 double-labelled); tool scores, F1 and κ with bootstrap CIs, the distilled classifier | `data/labels/`, `outputs/tables/q2_validation*` | ~5 min |
 | `08_run_analysis.py` | Q1 to Q4 and the extra questions | `outputs/tables/`, `outputs/results.json` | ~10 s |
-| `09_make_figures.py` | the 5 report figures from the saved tables | `outputs/figures/` | ~10 s |
+| `09_make_figures.py` | the 4 report figures and notebook Figure A from the saved tables | `outputs/figures/` | ~10 s |
 | `make_notebook.py` | builds `analysis.ipynb` from `REPORT.md` text plus code cells; then run it with nbconvert | `analysis.ipynb` | ~1 min |
 | `build_report.py`, `99_lint_prose.py` | REPORT.md to PDF (markdown-it, WeasyPrint); checks for em dashes | `REPORT.pdf` | ~5 s |
 

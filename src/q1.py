@@ -53,14 +53,12 @@ def coverage(d: pd.DataFrame, dates: pd.DatetimeIndex, col: str = "issue") -> pd
     return (n >= MIN_DOCS_ISSUE_DAY).mean().reindex(ISSUE_VOCAB).fillna(0.0)
 
 
-def key_topics(share: pd.Series, cov: pd.Series) -> list[str]:
-    """Pre-registered rule: share >= 5% and >= 20 docs on >= 90% of days; top 5 to 8 by share."""
-    ok = share[(share >= KEY_SHARE_MIN) & (cov >= COVERAGE_MIN)].sort_values(ascending=False)
-    keys = list(ok.index[:8])
-    if len(keys) < 5:   # rule says at least 5: fill by share among issues meeting coverage
-        extra = share[(cov >= COVERAGE_MIN) & ~share.index.isin(keys)].sort_values(ascending=False)
-        keys += list(extra.index[: 5 - len(keys)])
-    return keys
+def key_topics(share: pd.Series, top: int = 8) -> list[str]:
+    """Key-topic rule used (config.PREREG_DEVIATION): voter-voice share >= 5%, the top 8 by share.
+    The pre-registered coverage part (>= 20 docs on >= 90% of days) was met by no issue under the main
+    assignment and by only two under the outlier-reduced one, too few for 5 to 8 key topics."""
+    ok = share[share >= KEY_SHARE_MIN].sort_values(ascending=False)
+    return list(ok.index[:top])
 
 
 def poll_compare(voter: pd.Series, news: pd.Series) -> pd.DataFrame:

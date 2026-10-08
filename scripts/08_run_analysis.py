@@ -33,7 +33,7 @@ for g in ("US_LEFT", "US_RIGHT", "US_CENTER", "BUSINESS", "INTL"):
     sal[f"news_{g}"] = q1.shares(nw[nw["group"] == g])
 sal = sal.sort_values("voter", ascending=False)
 sal.to_csv(TABLES / "q1_issue_shares.csv")
-keys = list(sal.index[(sal["voter"] >= 0.05)][:8])
+keys = q1.key_topics(sal["voter"])   # deviation rule: share >= 5%, top 8 (PREREG_DEVIATION)
 w_k = sal.loc[keys, "voter"] / sal.loc[keys, "voter"].sum()
 pc = q1.poll_compare(sal["voter"], sal["news"])
 pc.to_csv(TABLES / "q1_poll_compare.csv", index=False)
@@ -78,7 +78,13 @@ R["q1"] = {"bertopic": json.loads((TABLES / "q1_bertopic_summary.json").read_tex
            "key_topics": keys, "weights": w_k.round(4).to_dict(), "topic_assignment_accuracy": acc,
            "spearman": pc.groupby("poll")[["spearman_voter", "spearman_news", "n_categories"]].first().round(3).to_dict(orient="index"),
            "india_flagged_docs": int(di["india"].sum()),
-           "seed_key_overlap_of_8": seed_overlap, "seed_share_spearman": seed_corr, "seed_keys": seed_keys}
+           "seed_key_overlap_of_8": seed_overlap, "seed_share_spearman": seed_corr, "seed_keys": seed_keys,
+           "economy_rank": {c: int(seed_tab[c].rank(ascending=False)["Economy & cost of living"]) for c in seed_tab},
+           "economy_rank_main_full": int(sal["voter"].rank(ascending=False)["Economy & cost of living"]),
+           "shares_outlier_reduced_top5": (100 * sal["voter_ro"].sort_values(ascending=False).head(5)).round(2).to_dict(),
+           "economy_share_range_all_variants": [float(100 * min(sal.loc["Economy & cost of living", ["voter", "voter_ro", "voter_eng"]].min(), seed_tab.loc["Economy & cost of living"].min())),
+                                                float(100 * max(sal.loc["Economy & cost of living", ["voter", "voter_ro", "voter_eng"]].max(), seed_tab.loc["Economy & cost of living"].max()))],
+           "news_from_named_outlets": int((nw["group"] != "US_OTHER").sum()), "news_from_us_feed": int((nw["group"] == "US_OTHER").sum())}
 print("Q1 key topics:", keys)
 print((sal[["voter", "voter_ro", "voter_eng", "news"]] * 100).round(1).head(12).to_string())
 print("assignment accuracy:", acc)
@@ -105,6 +111,11 @@ alt["C_tone_nondirectional"] = index.composite(I_tone, w_k)
 cum = vo[vo["issue"].isin(keys)].groupby(["day", "issue"]).size().unstack("issue").reindex(CAL).reindex(columns=keys).fillna(0).cumsum().shift(1)
 wexp = cum.div(cum.sum(axis=1), axis=0)
 alt["C_expanding_w"] = ((I * wexp).sum(axis=1, min_count=1) / (I.notna() * wexp).sum(axis=1).replace(0, np.nan))
+# robustness: the key set plus the economy (it ranks 3rd or 4th in every seed refit)
+keys_e = keys + ["Economy & cost of living"]
+w_e = sal.loc[keys_e, "voter"] / sal.loc[keys_e, "voter"].sum()
+I_e, _ = index.issue_index(dv, "s_primary", "bar_date", keys_e, CAL)
+alt["C_with_economy"] = index.composite(I_e, w_e)
 import src.index as _ix
 _old = _ix.MIN_DOCS_ISSUE_DAY; _ix.MIN_DOCS_ISSUE_DAY = 20
 I20, _ = index.issue_index(dv, "s_primary", "bar_date", keys, CAL); _ix.MIN_DOCS_ISSUE_DAY = _old
@@ -116,7 +127,23 @@ sh = {"r_level_mean": float(shs["r_level"].mean()), "r_level_sd": float(shs["r_l
       "r_level_min": float(shs["r_level"].min()), "r_level_max": float(shs["r_level"].max()),
       "r_change_mean": float(shs["r_change"].mean()), "sb_level_of_mean": float(2 * shs["r_level"].mean() / (1 + shs["r_level"].mean())),
       "n_seeds": 50}
-R["q2"] = {"docs_in_index": int(dv["issue"].isin(keys).sum()), "docs_per_day_median": float(n_kt.sum(axis=1).median()),
+from src import validate as V
+from scipy import stats as _st2
+from src.config import PROCESSED
+lv = pd.read_parquet(PROCESSED / "labelled_scored.parquet")
+lv = lv[lv["item_id"].str.startswith("V") & lv["src"].isin(["twitter", "reddit"])].copy()
+lv["tau"] = V.tau(lv["clean"])
+lv["combo"] = np.where(lv["src"] == "twitter", V.nli_label(lv["nli_D"], lv["nli_R"]),
+                       V.target_label(lv["tau"].to_numpy(), V.rob_polarity(lv)))
+lv["s_combo"] = np.where(lv["src"] == "twitter", lv["nli_s"], (lv["rob_pos"] - lv["rob_neg"]) * lv["tau"])
+combo = V.metrics_ci(lv["direction"].to_numpy(), lv["combo"].to_numpy())
+maj = lv["direction"].value_counts()
+from sklearn.metrics import f1_score as _f1
+combo_extra = {"majority_label": maj.index[0], "majority_accuracy": float(maj.iloc[0] / len(lv)),
+               "majority_macro_f1": float(_f1(lv["direction"], np.full(len(lv), maj.index[0]), average="macro",
+                                              labels=sorted(lv["direction"].unique()))),
+               "spearman_s_vs_label": float(_st2.spearmanr(lv["s_combo"], lv["direction"].map({"R": -1, "N": 0, "D": 1})).statistic)}
+R["q2"] = {"index_tool_combo_on_110_social": combo, "index_tool_combo_baseline": combo_extra, "docs_in_index": int(dv["issue"].isin(keys).sum()), "docs_per_day_median": float(n_kt.sum(axis=1).median()),
            "coverage_ge5": cov.round(3).to_dict(), "tau_nonzero_share_reddit_voter": float((dv.loc[dv["platform"] == "reddit", "tau"] != 0).mean()),
            "split_half": sh, "C_sd": float(C.std()), "C_mean_level_first_half": float(C.iloc[:49].mean()),
            "C_mean_level_second_half": float(C.iloc[49:].mean()),
@@ -162,19 +189,20 @@ for h in (3, 5):
     grid.append(pd.DataFrame([{"spec": f"{h}-day overlapping changes", "test": "same-day", "direction": "sent ~ dP",
                                "lag": 0, "N": r["N"], "pearson_r": float(s_h.corr(dph)), "coef": r["coef"], "p_hac": r["p_hac"]}]))
 gridf = pd.concat(grid, ignore_index=True)
+_sd = gridf[gridf["test"] == "same-day"].set_index("spec")
+same_day_by_spec = {k: {"r": float(v["pearson_r"]), "p_hac": float(v["p_hac"])} for k, v in _sd.iterrows()}
 gridf.to_csv(TABLES / "q3_robustness_grid.csv", index=False)
 # claim checks on family A
 claims = []
 for _, row in famA.iterrows():
-    sign_ok = np.sign(row["coef"]) == PREREG["expected_sign_index_vs_dp"] if row["direction"] != "dP -> sent" else True
+    # pre-registered expected sign is + for every test (pro-D sentiment and rising sweep odds go together)
+    sign_ok = np.sign(row["coef"]) == PREREG["expected_sign_index_vs_dp"]
     passed = bool(row["q_bh"] < 0.10 and row["p_perm"] < 0.10 and sign_ok)
     rec = {"test": row["test"], "direction": row["direction"], "lag": int(row["lag"]), "pre_checks_pass": passed}
     if passed:
-        rec["lodo"] = P.leave_one_day_out(S, dp, ex, row["test"], int(row["lag"]), row["direction"])
-        s2, d2 = P.drop_episode(S), P.drop_episode(dp)
-        ff = P.family_a(s2, d2, ex.reindex(s2.index), "drop Sept 10-26", perm=False)
-        m = ff[(ff["test"] == row["test"]) & (ff["lag"] == row["lag"]) & (ff["direction"] == row["direction"])].iloc[0]
-        rec["drop_episode_p_hac"] = float(m["p_hac"]); rec["drop_episode_coef"] = float(m["coef"])
+        lead = row["direction"].startswith("sent ->")
+        rec["lodo"] = P.leave_one_day_out(S, dp, ex, row["test"], int(row["lag"]), lead)
+        rec["drop_episode"] = P.episode_test(S, dp, ex, row["test"], int(row["lag"]), lead)
     claims.append(rec)
 xc = P.cross_corr(S, dp); xc.to_csv(TABLES / "q3_cross_corr.csv", index=False)
 var = None
@@ -186,7 +214,7 @@ try:
     var = {"irf_dP_to_sent_shock": [float(x) for x in v1["irf"]], "cum_irf_dP": v1["cum_irf"],
            "irf_lo": None if v1["irf_lo"] is None else [float(x) for x in v1["irf_lo"]],
            "irf_hi": None if v1["irf_hi"] is None else [float(x) for x in v1["irf_hi"]],
-           "irf_sent_to_dP_shock_reverse_order": [float(x) for x in v2["irf"]], "lag_aic": v1["lag_aic"], "lag_bic": v1["lag_bic"]}
+           "irf_sent_response_to_dP_shock": [float(x) for x in v2["irf"]], "lag_aic": v1["lag_aic"], "lag_bic": v1["lag_bic"]}
 except Exception as e:  # noqa: BLE001
     var = {"error": str(e)}
 venue_rel = float(dp.corr(dpk))
@@ -199,7 +227,7 @@ R["q3"] = {"N": int(pd.concat([S, dp], axis=1).dropna().shape[0]), "primary_is_l
                             "mean": float(((sw["poly_p"] - sw["kal_p"]) * 100).reindex(CAL).mean())},
            "p_path": {"start": float(sw["poly_p"].loc["2026-07-01"]), "end": float(sw["poly_p"].loc["2026-10-07"]),
                       "max": float(sw["poly_p"].reindex(CAL).max()), "max_date": str(sw["poly_p"].reindex(CAL).idxmax().date())},
-           "var": var, "cross_corr": xc.round(3).to_dict(orient="records")}
+           "var": var, "cross_corr": xc.round(3).to_dict(orient="records"), "same_day_by_spec": same_day_by_spec}
 sw.to_csv(TABLES / "q3_sweep_daily.csv")
 print("\nQ3 stationarity:", {k: (round(v["ADF_p"], 3), round(v["KPSS_p"], 3), v["stationary"]) for k, v in st.items()})
 print(famA[["test", "direction", "lag", "N", "pearson_r", "coef", "p_hac", "p_perm", "q_bh"]].round(4).to_string(index=False))
@@ -209,6 +237,7 @@ print("robust p<0.10:", R["q3"]["robust_count_p_lt_0.10"], "of", R["q3"]["robust
 
 # ====================================================================== Q4
 from src import basket as B
+from src.granger import granger_f as granger_f_
 from src.config import BETA_END, BETA_START, CANDIDATES, NAME_GROUP
 px = market.load_close()
 ret = market.log_ret(px)
@@ -314,6 +343,26 @@ R["q3"]["grid_joint_null"] = {"observed": obs_hits, "null_mean": float(null_hits
                               "null_p90": float(np.percentile(null_hits, 90)), "n_shifts": int(len(null_hits)),
                               "p_value": float((1 + (null_hits >= obs_hits).sum()) / (1 + len(null_hits)))}
 print("grid joint null:", R["q3"]["grid_joint_null"])
+_ls = legs["strong"]["ls"]
+timing = {"cum_to_Sep9": float(_ls.loc[:"2026-09-09"].sum()), "sum_Sep10_26": float(_ls.loc["2026-09-10":"2026-09-26"].sum()),
+          "cum_to_Oct1": float(_ls.loc[:"2026-10-01"].sum()), "sum_Oct2_7": float(_ls.loc["2026-10-02":"2026-10-07"].sum()),
+          "Oct7_alone": float(_ls.loc["2026-10-07"]), "total": float(_ls.sum()),
+          "odds_Sep9": float(100 * swt["poly_p"].loc["2026-09-09"]), "odds_Sep25": float(100 * swt["poly_p"].loc["2026-09-25"]),
+          "odds_Oct1": float(100 * swt["poly_p"].loc["2026-10-01"]), "odds_Oct7": float(100 * swt["poly_p"].loc["2026-10-07"])}
+famW = P.family_a(S_td, legs["weak_factor"]["ls"], ex_td, "sentiment vs weak_factor L/S (with permutation)", names=("sent", "LS"))
+famW.to_csv(TABLES / "q4_family_sent_vs_weak_factor.csv", index=False)
+wchk = []
+for _, row in famW[famW["p_hac"] < 0.10].iterrows():
+    lead = row["direction"].startswith("sent ->")
+    rec = {"direction": row["direction"], "lag": int(row["lag"]), "coef": float(row["coef"]), "p_hac": float(row["p_hac"]),
+           "p_perm": float(row["p_perm"]), "q_bh": float(row["q_bh"]),
+           "lodo": P.leave_one_day_out(S_td, legs["weak_factor"]["ls"], ex_td, row["test"], int(row["lag"]), lead),
+           "drop_episode": P.episode_test(S_td, legs["weak_factor"]["ls"], ex_td, row["test"], int(row["lag"]), lead)}
+    wchk.append(rec)
+_pre = pre_eb.copy()
+sign_counts = {"pre_strong_expected": int(((np.sign(_pre["gamma_coef"]) == _pre["expected_sign"]) & (_pre["strength"] == "strong")).sum()),
+               "pre_short_expected": int(((np.sign(_pre["gamma_coef"]) == -1) & (_pre["expected_sign"] == -1) & (_pre["strength"] == "strong")).sum()),
+               "n_strong": int((_pre["strength"] == "strong").sum()), "n_short": int(((_pre["expected_sign"] == -1) & (_pre["strength"] == "strong")).sum())}
 per_name = pd.DataFrame([{"ticker": t, "group": NAME_GROUP[t], "expected_sign": CANDIDATES[t],
                           **{f"test_{k}": v for k, v in P.hac_reg(AR[t], dpt["poly_p"]).items()},
                           "pre_gamma": pre_eb.loc[t, "gamma_coef"], "pre_gamma_se": pre_eb.loc[t, "gamma_se"],
@@ -324,7 +373,9 @@ R["q4"] = {"N_trading_days": int(len(td)), "gate_names": gate,
            "family_sent_vs_basket": famB.round(4).to_dict(orient="records"),
            "family_dp_vs_basket": famV.round(4).to_dict(orient="records"),
            "robust_count_p_lt_0.10": int((grid4["p_hac"] < 0.10).sum()), "robust_tests": int(len(grid4)), "grid_joint_null": grid4_null,
-           "cum_ar_end": cum.iloc[-1].round(3).to_dict(), "rigobon_sack": rs, "mde_r": P.mde_r(int(len(td))),
+           "cum_ar_end": cum.iloc[-1].round(3).to_dict(), "rigobon_sack": rs, "timing": timing, "weak_factor_claim_checks": wchk,
+           "sign_counts": sign_counts, "family_sent_vs_basket_same_day_r": float(famB.loc[famB["test"] == "same-day", "pearson_r"].iloc[0]),
+           "family_sent_vs_basket_same_day_spearman": float(famB.loc[famB["test"] == "same-day", "spearman_r"].iloc[0]), "mde_r": P.mde_r(int(len(td))),
            "provisional_oct7": (OUTPUTS.parent / "data/raw/market/provisional_close.json").exists(),
            "pre_window": json.loads((TABLES / "q4_election_betas_summary.json").read_text())}
 print("\nQ4 validation (strong L/S on dP):"); print(val[(val.basket == "strong")].round(3).to_string(index=False))
@@ -345,8 +396,9 @@ for col in ["shared_media", "news", "news_US_LEFT", "news_US_RIGHT", "news_US_CE
 e1 = pd.DataFrame(e1); e1.to_csv(TABLES / "e1_agenda_distance.csv", index=False)
 # E2: which single issue tracks the sweep odds (same-day and lag-1 Granger, BH across issues)
 e2 = []
-for k in keys:
-    s_k = I[k] if primary_is_level else I[k].diff()
+for k in keys_e:
+    src_I = I if k in keys else I_e     # key issues: the same indices as Figure 3; economy from the 9-issue run
+    s_k = src_I[k] if primary_is_level else src_I[k].diff()
     h = P.hac_reg(dp, s_k, ex)
     g = __import__("src.granger", fromlist=["x"]).granger_f(dp, s_k, 1, ex)
     g2 = __import__("src.granger", fromlist=["x"]).granger_f(s_k, dp, 1, ex)

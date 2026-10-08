@@ -49,13 +49,13 @@ display(tt[['topic', 'label', 'short_name', 'confidence', 'share_all_docs_%', 't
 display((pd.read_csv(TABLES / 'q1_issue_shares.csv', index_col=0) * 100).round(1))
 display(pd.read_csv(TABLES / 'q1_poll_compare.csv').round(2))
 display((pd.read_csv(TABLES / 'q1_seed_stability.csv', index_col=0) * 100).round(1))
-for f in ['fig1_issue_shares.png', 'fig2_salience_over_time.png']:
+for f in ['fig1_issue_shares.png', 'figA_salience_over_time.png']:
     display(Image(filename=str(FIGURES / f), width=950))"""
 C["q2"] = """print('docs in index:', R['q2']['docs_in_index'], '| median docs/day:', R['q2']['docs_per_day_median'])
 print('coverage (share of days with >= 5 docs):', R['q2']['coverage_ge5'])
 print('split-half reliability:', R['q2']['split_half'])
 print('correlation of C with its alternatives:', R['q2']['corr_C_with_alternatives'])
-display(Image(filename=str(FIGURES / 'fig3_directional_index.png'), width=950))"""
+display(Image(filename=str(FIGURES / 'fig2_directional_index.png'), width=950))"""
 C["q3"] = """print('stationarity:', json.dumps(R['q3']['stationarity'], indent=1))
 display(pd.read_csv(TABLES / 'q3_family_a.csv').round(4))
 print('claim checks:', R['q3']['claims'])
@@ -63,7 +63,7 @@ g = pd.read_csv(TABLES / 'q3_robustness_grid.csv'); display(g[g.p_hac < 0.10].ro
 print('robust p<0.10:', R['q3']['robust_count_p_lt_0.10'], 'of', R['q3']['robust_tests'], '| detectable r:', round(R['q3']['mde_r_N'], 3),
       '| venue daily corr:', round(R['q3']['venue_daily_corr'], 3), '| venue gap:', R['q3']['venue_gap_pp'])
 print('VAR impulse response of dP to an index shock:', [round(x, 3) for x in R['q3']['var']['irf_dP_to_sent_shock']])
-display(Image(filename=str(FIGURES / 'fig4_sweep_index.png'), width=950))"""
+display(Image(filename=str(FIGURES / 'fig3_sweep_index.png'), width=950))"""
 C["q4"] = """display(pd.read_csv(TABLES / 'q4_election_betas_main_poly.csv', index_col=0)[['group', 'expected_sign', 'beta', 'gamma_coef', 'gamma_se', 'gamma_ci90_lo', 'gamma_ci90_hi', 'sign_match']].round(3))
 display(pd.read_csv(TABLES / 'q4_group_gamma_main_poly.csv', index_col=0).round(3))
 display(pd.read_csv(TABLES / 'q4_basket_gamma_main_poly.csv', index_col=0).round(3))
@@ -72,7 +72,7 @@ display(pd.read_csv(TABLES / 'q4_rigobon_sack.csv', index_col=0).round(3))
 display(pd.read_csv(TABLES / 'q4_family_sent_vs_basket.csv').round(4))
 display(pd.read_csv(TABLES / 'q4_per_name.csv').round(3))
 print('cumulative AR at Oct 7 (%):', R['q4']['cum_ar_end'], '| provisional Oct 7 close:', R['q4']['provisional_oct7'])
-display(Image(filename=str(FIGURES / 'fig5_basket.png'), width=950))"""
+display(Image(filename=str(FIGURES / 'fig4_basket.png'), width=950))"""
 C["extras"] = """display(pd.read_csv(TABLES / 'e1_agenda_distance.csv').round(3))
 display(pd.read_csv(TABLES / 'e2_issue_vs_sweep.csv').round(3))
 display((pd.read_csv(TABLES / 'e3_issue_shift.csv', index_col=0)).round(4))

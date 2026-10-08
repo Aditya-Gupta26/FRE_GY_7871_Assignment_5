@@ -20,10 +20,12 @@ ul, ol { margin: 0 0 4pt 0; padding-left: 13pt; }
 li > ul { margin: 1pt 0 1pt 0; }
 li p { margin: 0; }
 li { margin-bottom: 0.5pt; }
+p + table { break-before: avoid; page-break-before: avoid; }
 table { border-collapse: collapse; width: 100%; font-size: 7.8pt; margin: 3pt 0 6pt 0; }
 th { border-bottom: 0.8pt solid #52514e; text-align: left; padding: 1.5pt 4pt; }
 td { border-bottom: 0.4pt solid #e1e0d9; padding: 1.2pt 4pt; }
-img { display: block; margin: 2pt auto 0 auto; max-width: 100%; max-height: 1.8in; }
+tr { break-inside: avoid; page-break-inside: avoid; }
+img { display: block; margin: 2pt auto 0 auto; max-width: 100%; max-height: 1.7in; }
 em.cap, p.cap { font-size: 8pt; color: #52514e; }
 hr { border: none; border-top: 0.6pt solid #c3c2b7; margin: 6pt 0; }
 code { font-size: 8.4pt; }

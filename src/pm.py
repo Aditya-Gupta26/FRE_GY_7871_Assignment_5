@@ -45,8 +45,8 @@ def kalshi_hourly(ticker: str = "KXBALANCEPOWERCOMBO-27FEB-DD") -> pd.DataFrame:
 def snapshot(h: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.DataFrame:
     """For each date: last hourly price with ts <= date 16:00 + tolerance. Returns p, price_ts."""
     h = h.dropna(subset=["p"])
-    cuts = pd.DatetimeIndex([pd.Timestamp(d.date(), tz=ET) + pd.Timedelta(hours=SNAPSHOT_HOUR_ET,
-                                                                          minutes=SNAPSHOT_TOL_MIN)
+    # build the local wall-clock time first, then localise, so a DST day is still 16:05 ET
+    cuts = pd.DatetimeIndex([pd.Timestamp(f"{d.date()} {SNAPSHOT_HOUR_ET:02d}:{SNAPSHOT_TOL_MIN:02d}").tz_localize(ET)
                              for d in dates])
     pos = np.searchsorted(h["ts"].to_numpy(), cuts.to_numpy(), side="right") - 1
     out = pd.DataFrame(index=pd.DatetimeIndex([d.normalize().tz_localize(None) for d in dates]))

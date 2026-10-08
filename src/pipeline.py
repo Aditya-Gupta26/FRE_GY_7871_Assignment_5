@@ -85,7 +85,7 @@ def family_a(sent: pd.Series, dp: pd.Series, exog: pd.DataFrame | None, label: s
     r_s, p_s = stats.spearmanr(both["s"], both["dp"])
     h = hac_reg(both["dp"], both["s"], exog.reindex(both.index) if exog is not None else None)
     a_, b_ = names
-    rows.append({"spec": label, "test": "same-day", "direction": f"{a_} ~ {b_}", "lag": 0, "N": h["N"],
+    rows.append({"spec": label, "test": "same-day", "direction": f"{b_} ~ {a_}", "lag": 0, "N": h["N"],
                  "pearson_r": r_p, "spearman_r": r_s, "coef": h["coef"], "p_hac": h["p_hac"],
                  "p_perm": _perm_corr(both["s"], both["dp"]) if perm else np.nan})
     ex = exog.reindex(both.index) if exog is not None else None
@@ -110,18 +110,33 @@ def _perm_corr(x: pd.Series, y: pd.Series, min_shift: int = PERM_MIN_SHIFT) -> f
     return float((1 + sum(r >= obs for r in rs)) / (1 + len(rs)))
 
 
-def leave_one_day_out(sent: pd.Series, dp: pd.Series, exog, test: str, lag: int, direction: str) -> dict:
+def leave_one_day_out(sent: pd.Series, dp: pd.Series, exog, test: str, lag: int, sent_leads: bool) -> dict:
+    """Drop one day at a time. For Granger tests the lags are built on the FULL series and only
+    the target row is removed (granger_f's `keep`), so a lag never jumps over a removed day."""
     vals = []
     both = pd.concat([sent.rename("s"), dp.rename("dp")], axis=1).dropna()
     for d in both.index:
-        b = both.drop(index=d)
-        ex = exog.reindex(b.index) if exog is not None else None
+        keep = both.index.drop(d)
         if test == "same-day":
-            vals.append(hac_reg(b["dp"], b["s"], ex)["p_hac"])
+            b = both.loc[keep]
+            vals.append(hac_reg(b["dp"], b["s"], exog.reindex(keep) if exog is not None else None)["p_hac"])
         else:
-            y, x = (b["dp"], b["s"]) if direction == "sent -> dP" else (b["s"], b["dp"])
-            vals.append(granger.granger_f(y, x, lag, ex)["p_hac"])
+            y, x = (both["dp"], both["s"]) if sent_leads else (both["s"], both["dp"])
+            vals.append(granger.granger_f(y, x, lag, exog.reindex(both.index) if exog is not None else None, keep=keep)["p_hac"])
     return {"max_p": float(np.max(vals)), "share_p_lt_0.10": float(np.mean(np.array(vals) < 0.10))}
+
+
+def episode_test(sent: pd.Series, dp: pd.Series, exog, test: str, lag: int, sent_leads: bool) -> dict:
+    """Re-run one test without the Sept 10 to 26 episode (lags built on the full series)."""
+    both = pd.concat([sent.rename("s"), dp.rename("dp")], axis=1).dropna()
+    keep = drop_episode(both["s"]).index
+    if test == "same-day":
+        b = both.loc[keep]
+        r = hac_reg(b["dp"], b["s"], exog.reindex(keep) if exog is not None else None)
+        return {"p_hac": r["p_hac"], "coef": r["coef"]}
+    y, x = (both["dp"], both["s"]) if sent_leads else (both["s"], both["dp"])
+    g = granger.granger_f(y, x, lag, exog.reindex(both.index) if exog is not None else None, keep=keep)
+    return {"p_hac": g["p_hac"], "coef": g["sum_coef"]}
 
 
 def drop_episode(s: pd.Series) -> pd.Series:

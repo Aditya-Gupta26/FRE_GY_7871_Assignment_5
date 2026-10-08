@@ -37,25 +37,25 @@ No explainer artifact was used for this assignment.
 **Anything the model got wrong that I had to correct:** All of these are from the running bug log. They were caught by the checks at every step: counts per source and day, timestamps against known events, recomputation by independent agents, and looking at every figure.
 
 The most serious ones would have changed the results or misled the reader:
-- **The Polymarket "16:00" snapshot was really the 15:00 price.** Every hourly point is stamped about 17 seconds past the hour, so "last point at or before 16:00" picked the previous hour. That would have let posts from 15:00 to 16:00 sit after the start of the price change they were tested against. Fixed by snapping at 16:05 and asserting every post is earlier than the price used.
+- **The Polymarket "16:00" snapshot was really the 15:00 price.** Every hourly point is stamped about 16 seconds past the hour, so "last point at or before 16:00" picked the previous hour. That would have let posts from 15:00 to 16:00 sit after the start of the price change they were tested against. Fixed by snapping at 16:05 and asserting every post is earlier than the price used.
 - **The brief's "14-point gap" between the two venues was wrong.** Their own histories show -1.0 to +6.0 points; the 48% was Kalshi's early-September price compared with Polymarket's late-September one.
 - **The POLICY news query was useless.** Google ignored its date filters and returned the same ~100 articles every day (10,000 items, 104 unique). It was dropped.
-- **News headlines carry a date only** (75% are stamped 07:00 GMT), so news was kept out of every timed test.
-- **The pre-registered key-topic rule could not be met.** No issue had 20 docs a day on 90% of days. The deviation (5 docs, outlier-reduced topics) was written down before any index existed, and the report shows the lag-2 pattern disappears under the original rule.
-- **The first draft overstated things.** It said the Q1 ranking was robust in its top half, but in all three model seeds "abortion and social issues" falls from 11% to 3% to 6%; that issue is also mostly race and religion debates. Split-half reliability was reported from one lucky split (0.16; the average over 50 splits is 0.08). The robustness hits were compared with chance as if the tests were independent; a joint shifted null shows they are what chance gives (P = 0.37).
+- **News headlines carry a date only** (78% of the final headlines are stamped 07:00 GMT), so news was kept out of every timed test.
+- **The pre-registered key-topic rule could not be met.** Under the main topic assignment no issue had 20 docs a day on 90% of days (under the outlier-reduced one only two did, too few for 5 to 8 key topics). The deviation (5 docs, outlier-reduced topics) was written down before any index existed, and the report shows the lag-2 pattern disappears under the original rule.
+- **The first draft overstated things.** It said the Q1 ranking was robust in its top half, but in all three model seeds "abortion and social issues" falls from 11% to 3% to 6%; that issue is also mostly race and religion debates. Split-half reliability was reported from one lucky split (0.16; the average over 50 splits is 0.08). The robustness hits were compared with chance as if the tests were independent; a joint shifted null shows they are what chance gives (P = 0.30).
 - **Several unverified sentences were caught and rewritten:** that each hospital cut guidance (Tenet raised it), that "company news" drove single-name moves, that the repricing "came from" polls, that the ethics spike was the Epstein files (the data say mostly the PAC-money topic).
 
 Data and code bugs:
-- **Two all-NaN stock rows.** These were Memorial Day and Labor Day, the same yfinance bug as in A4. Fixed by keeping only the days SPY traded.
+- **Two all-NaN stock rows.** In the first download these were Memorial Day and Labor Day, the same yfinance bug as in A4. Fixed by keeping only the days SPY traded.
 - **Collector bugs:**
   - Arctic Shift rejects `domain` as a field.
   - abcnews.go.com returned 0 items and msnbc.com 1 (now abcnews.com and ms.now).
   - The Polymarket API appends a "current" point after the end time.
-  - On the evening of Oct 7, Yahoo served an empty Oct 7 bar; it is filled from the last hourly bar and flagged provisional.
+  - On the evening of Oct 7, Yahoo served an empty Oct 7 bar; it was filled from the last hourly bar and flagged provisional, then replaced by the official close in a later re-pull.
 - **BERTopic segfaulted** while transforming 138k docs (numba threads). It now runs single-threaded in chunks.
 - **gensim's LdaMulticore crashed** on macOS, so the single-process LDA is used instead.
 - **A faster NLI setting would have silently changed scores for long tweets.** 11% of tweets are over 120 tokens; a 0.49 difference showed up against the validated scores, so the validated 256-token limit is kept.
-- **Figure 4's legend was mislabelled.** The shaded band was named "Polymarket" and the Polymarket line "Kalshi". It was caught by looking at the figure, along with overlapping axis labels and a legend covering a line.
+- **The sweep-odds figure's legend was mislabelled** (now Figure 3). The shaded band was named "Polymarket" and the Polymarket line "Kalshi". It was caught by looking at the figure, along with overlapping axis labels and a legend covering a line.
 - **Missing checks and small inconsistencies:**
   - A missing pre-registered robustness check (the trading-day calendar).
   - A timing assert weaker than the plan's rule.
@@ -68,6 +68,12 @@ Data and code bugs:
 - **The Q1 headline mislabelled its category.** "Iran war 20.3%" is the whole foreign-policy label, whose biggest part is Israel aid and AIPAC (9.5 points; the Iran war is 6.9). A sentence also said the Iran topics hold gas prices, but the gas-price topic is in the economy.
 - **Four rounding errors.** One p-value, one γ, one correlation and one band limit.
 - **Results left out of the report.** Two single names (RUN, DLTR) move with the odds after correction; no insurer or hospital confirmed its pre-window γ; and the pre-registered test in changes is null.
-- **Smaller gaps.** Missing "In short" and Readings lines on Q5, floating labels in Figure 4, captions that did not explain the grey band, log returns written as if they were simple returns, and one statement ("record gas prices") that the sources did not support.
+- **Smaller gaps.** Missing "In short" and Readings lines on Q5, floating labels in the sweep-odds figure (now Figure 3), captions that did not explain the grey band, log returns written as if they were simple returns, and one statement ("record gas prices") that the sources did not support.
+
+**A second full re-check, on my request after the first push,** used three fresh agents (one on the question and method, one recomputing every number, one on the code) and found more, all fixed:
+- **The one correlation the question asks for in Q4** (sentiment index vs the basket's market-adjusted return) was tested but never written as a number; it is r = -0.02.
+- **The basket's +6.4% "right direction" was an endpoint effect:** the basket was flat (-0.3%) on Oct 1 after the whole rise in the odds, and the gain came in the last four days while the odds stayed within 63.5% to 66.5%.
+- **The short leg had no price support** (1 of 8 names with the expected pre-window sign), and the Q1 ranking depended on the topic assignment, so the robust claims were narrowed.
+- **Smaller ones:** "Kalshi candles mostly have no trade" (it is 26%), the 72,688 headlines are not all from the 30 named outlets, a few rounding errors, and several code issues that did not change any result.
 
 These got caught because nothing was accepted just because the code ran. The reviewer agents reproduced every headline number to rounding, and the final check matched every number in the report against `outputs/results.json` and the tables.
