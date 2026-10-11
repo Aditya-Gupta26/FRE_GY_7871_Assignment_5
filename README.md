@@ -26,6 +26,7 @@ Scripts, run in this order:
 | `07_make_validation_sample.py make` / `score` | blind labelling sheets (150 validation, 1,500 calibration, 50 double-labelled); tool scores, F1 and κ with bootstrap CIs, the distilled classifier | `data/labels/`, `outputs/tables/q2_validation*` | ~5 min |
 | `08_run_analysis.py` | Q1 to Q4 and the extra questions | `outputs/tables/`, `outputs/results.json` | ~10 s |
 | `09_make_figures.py` | the 4 report figures and notebook Figure A from the saved tables | `outputs/figures/` | ~10 s |
+| `10_class_extensions.py` | the five in-class-discussion extensions (REPORT Section 10, pre-specified in `config.PREREG_CLASS`): House vs Senate odds, issue-matched tests, attention, Kalshi volume, placebos; plus notebook Figure B | `outputs/tables/x*_*.csv`, `outputs/results_class.json` | ~20 s |
 | `make_notebook.py` | builds `analysis.ipynb` from `REPORT.md` text plus code cells; then run it with nbconvert | `analysis.ipynb` | ~1 min |
 | `build_report.py`, `99_lint_prose.py` | REPORT.md to PDF (markdown-it, WeasyPrint); checks for em dashes | `REPORT.pdf` | ~5 s |
 
@@ -77,7 +78,7 @@ python scripts/05_clean_and_score.py corpus && python scripts/05_clean_and_score
 python scripts/05_clean_and_score.py tone && python scripts/05_clean_and_score.py nli
 python scripts/06_topic_model.py fit && python scripts/06_topic_model.py diag
 python scripts/07_make_validation_sample.py score    # the label CSVs in data/labels/ are committed
-python scripts/08_run_analysis.py && python scripts/09_make_figures.py
+python scripts/08_run_analysis.py && python scripts/09_make_figures.py && python scripts/10_class_extensions.py
 python scripts/make_notebook.py && jupyter nbconvert --to notebook --execute --inplace analysis.ipynb
 python scripts/build_report.py && python scripts/99_lint_prose.py
 ```

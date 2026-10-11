@@ -76,4 +76,27 @@ Data and code bugs:
 - **The short leg had no price support** (1 of 8 names with the expected pre-window sign), and the Q1 ranking depended on the topic assignment, so the robust claims were narrowed.
 - **Smaller ones:** "Kalshi candles mostly have no trade" (it is 26%), the 72,688 headlines are not all from the 30 named outlets, a few rounding errors, and several code issues that did not change any result.
 
-These got caught because nothing was accepted just because the code ran. The reviewer agents reproduced every headline number to rounding, and the final check matched every number in the report against `outputs/results.json` and the tables.
+**The in-class discussion extensions (REPORT Section 10, Oct 10).**
+- **How they were chosen.** I gave Claude Code two class decks: the Oct 3 lecture on topic modeling, the 2026 midterms and equity markets, and the meme-stock discussion. It listed what they suggest that we had not done, and I chose five:
+  - House vs Senate odds
+  - issue-matched tests
+  - attention vs the size of odds moves
+  - Kalshi volume
+  - placebos
+
+  I also allowed a small typography change to keep 6 pages: body text 8.6pt to 8.4pt, line height 1.25 to 1.21, paragraph and list gaps 4pt to 3pt, tables 7.8pt to 7.6pt.
+- **Written down first.** The tests were recorded in `config.PREREG_CLASS` before any of them ran, but after the main results were known, so the report calls them exploratory.
+- **What a fresh agent found** when it recomputed every number with its own code:
+  - A correction note in the config carried a wrong time (20:05 instead of 19:35 ET).
+  - The report gave one-variable House and Senate slopes instead of the pre-specified joint ones.
+  - "Posters do not post more on those days" was wrong for Twitter: the tweet rate leans up and Reddit posting leans down, and neither survives the shift test.
+  - The random-sign placebo shuffled single names, which breaks the group structure. Flipping whole groups puts the real basket at the 92nd percentile, not the 99.8th.
+  - "The odds that moved were the Senate's" was too strong. The 0.97 correlation is close to mechanical, and the House is about a quarter of the sweep's rise.
+  - The "at least one chamber" probability was not normalised.
+  - "Trading confirms the odds" and "the placebos show" overstated what the numbers show.
+  - One added check was not labelled.
+
+  All of these were fixed. Every number added after the review is marked † in Section 10; a second fresh agent then found five such numbers still unmarked and some overstated wording, also fixed.
+- **What I caught myself:** an assert caught issue weights read rounded from `results.json`, and the pre-specified House rationale over-reached for ACA bills, which need both chambers. That is noted under the record rather than edited into it.
+
+These got caught because nothing was accepted just because the code ran. The reviewer agents reproduced every headline number to rounding, and the final check matched every number in the report against `outputs/results.json`, `outputs/results_class.json` and the tables.

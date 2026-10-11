@@ -242,3 +242,50 @@ PREREG_DEVIATION = {
                         "about 230 voter issue docs a day",
     "min_docs": "issue-day minimum lowered from 20 to 5 docs; each key issue's coverage is reported",
 }
+
+# ---------------------------------------------------------------- in-class discussion extensions
+# Written Oct 10, 2026, 19:27 ET, after the Oct 3 lecture "Topic modeling: the 2026 midterms and
+# equity markets" and the "Meme stocks" discussion deck, and BEFORE any of these five analyses was run.
+# The main results (Q1 to Q4) were already known, so everything here is EXPLORATORY: it is reported in
+# full, every test is listed, and nothing here changes a pre-registered result.
+PREREG_CLASS = {
+    "X1_scenarios": "Lecture slide 24 (dV ~ sum_s dPr(s) V(s)). From the mutually exclusive balance-of-power "
+                    "outcomes: P(D House) = P(D sweep) + P(R Senate, D House); P(D Senate) = P(D sweep) + "
+                    "P(D Senate, R House). Polymarket primary, Kalshi mid check (DD+DR, DD+RD), 16:00 ET "
+                    "snapshots, dP in pp. (a) pre-window Aug 1 2025-Jun 30 2026 and test window: strong L/S AR "
+                    "on dP_House and dP_Senate jointly (HAC 5 lags); expected sign of the House slope +, because "
+                    "the strong-basket mechanisms (appropriations, oversight, ICE money, ACA bills) need only the "
+                    "House. (b) C_t vs dP_House and vs dP_Senate: family A (7 tests each), expected sign +, "
+                    "same claim rule as PREREG.",
+    "X2_issue_matched": "Lecture slides 22-23 (exposure-weighted attention). Pairs fixed now: Health care -> "
+                        "insurers + hospitals (+1); Immigration & deportations -> GEO, CXW (-1); Foreign policy "
+                        "& Iran war -> defense (-1); Tech & AI -> COIN, HOOD (-1); Guns -> RGR, SWBI (+1). Group "
+                        "AR = equal-weight market-adjusted AR (alpha 0) x expected sign, trading-day bars. "
+                        "(a) direction: issue index I_k (Q2 construction, trading-day bars) vs signed group AR, "
+                        "family A per pair, BH pooled over all pairs' tests, expected sign +, claim rule as "
+                        "PREREG. (b) attention: the issue's share of voter issue docs vs |group AR|, same day, "
+                        "HAC + dow dummies + circular-shift permutation, BH over pairs, expected sign +. "
+                        "A pair is not tested if its issue has >= 5 docs on < 50% of trading days. (c) placebo: "
+                        "every issue x group combination, matched vs mismatched |r|.",
+    "X3_attention": "Meme deck slides 2, 5 (attention is not sentiment). A_t = mean of window z-scores of "
+                    "log(Reddit submissions in the 6 subs, all posts, complete collection) and log(tweet "
+                    "arrival rate = median over the bar's 90-minute pages of (n-1)/span minutes, raw query "
+                    "results). Calendar bars [16:00 t-1, 16:00 t). Target |dP_t| (Polymarket; Kalshi check). "
+                    "Family A, expected sign +, claim rule as PREREG. Check: drop Oct 6-7 (min_faves counted "
+                    "at search time, so the newest tweets are under-counted).",
+    "X4_volume": "Meme deck slides 5, 16 ('does trading confirm the story'). V_t = Kalshi DD volume (contracts) "
+                 "summed over the bar's hourly candles (a missing candle = 0); event volume (4 combos) as a "
+                 "check. Tests: log(1+V_t) vs |dP_t| Kalshi and Polymarket (same day, expected +); A_t vs "
+                 "log(1+V_t) family A (expected +). Descriptive: mean daily volume Sept 10-26 vs Jul 1-Sept 9.",
+    "X5_placebos": "Lecture slide 28 (falsification). (a) 10,000 random 9-long / 8-short splits of the 17 "
+                   "strong names (seed 7871): percentile of the real basket's test-window r with dP and with "
+                   "C, and of its pre-window gamma; signs carry information only if the real basket is in the "
+                   "top 10%. (b) placebo text: voter docs in BERTopic topic 1 (Indian Congress-BJP politics, "
+                   "outlier-reduced assignment) built into a daily index like I_k, family A vs dP; expected: "
+                   "no claim. (c) the mismatched issue-group pairs of X2.",
+}
+# Note added Oct 10, 19:35 ET, after running X1 (the record above is left as written; an earlier version
+# of this line wrongly said 20:05 ET, caught by the independent check): the X1 rationale
+# over-reaches for "ACA bills", since passing a law needs both chambers and the President. What needs only
+# one chamber is BLOCKING (a GOP reconciliation bill, the CLARITY Act, ICE money in appropriations) and
+# oversight. The expected sign and the tests are unchanged; the report states the corrected reasoning.

@@ -23,11 +23,12 @@ from IPython.display import Image, display
 pd.set_option('display.width', 180); pd.set_option('display.max_columns', 30)
 from src.config import TABLES, FIGURES, OUTPUTS, PREREG, PREREG_DEVIATION
 # recompute every table and figure from the saved data, exactly as for the report
-for s in ['scripts/08_run_analysis.py', 'scripts/09_make_figures.py']:
+for s in ['scripts/08_run_analysis.py', 'scripts/09_make_figures.py', 'scripts/10_class_extensions.py']:
     r = subprocess.run([sys.executable, s], capture_output=True, text=True)
     print(s, 'exit', r.returncode)
     assert r.returncode == 0, r.stderr[-2000:]
 R = json.loads((OUTPUTS / 'results.json').read_text())
+RC = json.loads((OUTPUTS / 'results_class.json').read_text())
 print('key topics:', R['q1']['key_topics'])"""
 C["data"] = """display(pd.read_csv(TABLES / 'filter_waterfall.csv'))
 print(json.load(open(TABLES / 'news_corpus_counts.json')))
@@ -77,13 +78,37 @@ C["extras"] = """display(pd.read_csv(TABLES / 'e1_agenda_distance.csv').round(3)
 display(pd.read_csv(TABLES / 'e2_issue_vs_sweep.csv').round(3))
 display((pd.read_csv(TABLES / 'e3_issue_shift.csv', index_col=0)).round(4))
 print({k: v for k, v in R['extras']['e3'].items() if k != 'xcorr_event'})"""
+C["class"] = """from src.config import PREREG_CLASS
+print('written before these were run (Oct 10, 19:27 ET):'); print(json.dumps(PREREG_CLASS, indent=1))
+# (1) scenario odds: House and Senate paths, the basket on each, and C on each
+print('paths (%):'); display(pd.DataFrame(RC['X1']['path']).T.round(1))
+print('daily-change correlations:', {k: round(v, 3) for k, v in RC['X1']['corr_daily_window'].items()})
+display(pd.read_csv(TABLES / 'x1_basket_house_senate.csv').round(3))
+display(pd.read_csv(TABLES / 'x1_family_C_house_senate.csv').round(4))
+print('claim checks, C vs House odds:', RC['X1']['claims_poly_house'])
+# (2) issue-matched direction (pooled BH) and attention tests, and the matched/mismatched matrix
+display(pd.DataFrame(RC['X2']['pairs']))
+display(pd.read_csv(TABLES / 'x2_issue_matched_direction.csv').round(4))
+display(pd.read_csv(TABLES / 'x2_issue_matched_attention.csv').round(4))
+display(pd.read_csv(TABLES / 'x2_placebo_matrix.csv', index_col=0).round(3))
+# (3) attention vs |dP| and (4) Kalshi volume
+display(pd.read_csv(TABLES / 'x3_attention_vs_absdp.csv').round(4))
+display(pd.read_csv(TABLES / 'x3_dattention_vs_absdp.csv').round(4))
+print({k: v for k, v in RC['X3'].items() if not k.startswith('claims')})
+display(pd.read_csv(TABLES / 'x4_attention_vs_volume.csv').round(4))
+print({k: v for k, v in RC['X4'].items() if not k.startswith('claims')})
+# (5) placebos
+print('random-sign baskets:', RC['X5']['random_sign'])
+display(pd.read_csv(TABLES / 'x5_random_sign_placebo.csv', index_col=0).round(3))
+display(pd.read_csv(TABLES / 'x5_placebo_text.csv').round(4))
+display(Image(filename=str(FIGURES / 'figB_attention_volume.png'), width=950))"""
 
 nb = nbf.v4.new_notebook()
 cells = [nbf.v4.new_markdown_cell(MD["intro"]), nbf.v4.new_code_cell(C["setup"]),
          nbf.v4.new_markdown_cell(head.strip())]
 plan = [("1", []), ("2", ["data"]), ("3", ["method", ("md", "score_where"), "validation"]),
         ("4", ["q1", ("md", "how_q1")]), ("5", ["q2", ("md", "how_q2")]), ("6", ["q3", ("md", "how_q3")]),
-        ("7", ["q4", ("md", "how_q4")]), ("8", []), ("9", ["extras"]), ("10", [])]
+        ("7", ["q4", ("md", "how_q4")]), ("8", []), ("9", ["extras"]), ("10", ["class", ("md", "how_class")]), ("11", [])]
 for sec, extra in plan:
     cells.append(nbf.v4.new_markdown_cell(sections[sec].strip()))
     for e in extra:
